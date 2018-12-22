@@ -2,13 +2,24 @@ package com.sustav.javaeejpa.entity;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.JoinTable;
+import javax.persistence.MapKey;
+import javax.persistence.MapKeyJoinColumn;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.OrderColumn;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Anton Sustavov
@@ -30,8 +41,21 @@ public class Department extends AbstractEntity {
 
     private String departmentName;
 
-    @OneToMany(mappedBy = "department")
-    private Collection<Employee> employees = new ArrayList<>();
+//    @OneToMany(mappedBy = "department")
+//    @OrderBy("fullName asc, dateOfBirth desc, address.city")
+//    @OrderColumn(name = "EMPLOYEE_POSITION")
+//    private List<Employee> employees = new ArrayList<>();
+
+    @OneToMany
+    @MapKey(name = "id")
+    @JoinTable(name = "DEP_EMP")
+    private Map<Long, Employee> employees = new HashMap<>();
+
+    @ElementCollection
+    @CollectionTable(name = "EMP_RANKS")
+    @MapKeyJoinColumn(name = "EMP_ID")
+    @Column(name = "RANK")
+    private Map<Employee, Integer> employeeRank = new HashMap<>();
 
     @Transient
     private String departmentCode;
@@ -53,11 +77,28 @@ public class Department extends AbstractEntity {
         this.departmentName = departmentName;
     }
 
-    public Collection<Employee> getEmployees() {
+//    public List<Employee> getEmployees() {
+//        return employees;
+//    }
+//
+//    public void setEmployees(List<Employee> employees) {
+//        this.employees = employees;
+//    }
+
+
+    public Map<Long, Employee> getEmployees() {
         return employees;
     }
 
-    public void setEmployees(Collection<Employee> employees) {
+    public void setEmployees(Map<Long, Employee> employees) {
         this.employees = employees;
+    }
+
+    public Map<Employee, Integer> getEmployeeRank() {
+        return employeeRank;
+    }
+
+    public void setEmployeeRank(Map<Employee, Integer> employeeRank) {
+        this.employeeRank = employeeRank;
     }
 }

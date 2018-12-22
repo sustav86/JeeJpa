@@ -2,6 +2,9 @@ package com.sustav.javaeejpa.entity;
 
 import javax.json.bind.annotation.JsonbDateFormat;
 import javax.persistence.Basic;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,8 +13,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.MapKeyEnumerated;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -28,7 +35,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
@@ -80,12 +89,19 @@ public class Employee extends AbstractEntity {
     @OneToMany
     private Set<Employee> subordinates = new HashSet<>();
 
-
     @Enumerated(EnumType.STRING)
     private EmploymentType employmentType;
 
     @Embedded
     private Address address;
+
+    @ElementCollection
+    @CollectionTable(name = "EMP_QUA", joinColumns = @JoinColumn(name = "EMP_ID"))
+    private Collection<Qualifications> qualifications = new ArrayList<>();
+
+    @ElementCollection
+    @Column(name = "NICKY")
+    private Collection<String> nickNames = new ArrayList<>();
 
     private int age;
 
@@ -99,16 +115,26 @@ public class Employee extends AbstractEntity {
     @OneToMany
     private Collection<Payslip> pastPayslips = new ArrayList<>();
 
-
     @ManyToOne
     @JoinColumn(name = "DEPT_ID")
     private Department department;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     private byte[] picture;
 
-    @OneToOne(mappedBy = "employee")
+    @OneToOne(mappedBy = "employee", fetch = FetchType.LAZY)
     private ParkingSpace parkingSpace;
+
+    @ManyToMany(mappedBy = "employees")
+    private Collection<Project> projects = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "EMP_NUMBERS")
+    @MapKeyColumn(name = "PHONE_TYPE")
+    @Column(name = "PHONE_NUMBER")
+    @MapKeyEnumerated(EnumType.STRING)
+    private Map<PhoneType, String> employeePhoneNumbers = new HashMap<>();
 
     @PrePersist
     private void init() {
@@ -229,5 +255,13 @@ public class Employee extends AbstractEntity {
 
     public void setParkingSpace(ParkingSpace parkingSpace) {
         this.parkingSpace = parkingSpace;
+    }
+
+    public Collection<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Collection<Project> projects) {
+        this.projects = projects;
     }
 }
